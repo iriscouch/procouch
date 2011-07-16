@@ -6,7 +6,7 @@ Did somebody once tell you to remember to clean your views? But now you've forgo
 
 Do you vaguely recall warnings about *database contraction*? Or was it *liquefaction*?
 
-And Jesus H. Christ. If you hear one more word about *the security object*, you're going to scream!
+And, Jesus H. Christ, if you hear one more word about *the security object*, you're going to scream!
 
 The security object.
 
