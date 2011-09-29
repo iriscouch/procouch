@@ -1,18 +1,18 @@
-{ "name": "fresh_couchdb"
+{ "name": "pro_couchdb"
 , "version": "0.1.0"
 , "author": { "name": "Jason Smith"
             , "email": "jhs@iriscouch.com" }
-, "description": "Keep CouchDB fresh: view heating, auto-compaction, auto-purging"
-, "homepage": "http://github.com/iriscouch/fresh_couchdb"
+, "description": "Professional, production CouchDB: auto-view update and cleanup, auto-compact, auto-purge, auto-deploy"
+, "homepage": "http://github.com/iriscouch/pro_couchdb"
 , "repository": { "type": "git"
-                , "url": "git://github.com/iriscouch/fresh_couchdb" }
+                , "url": "git://github.com/iriscouch/pro_couchdb" }
 
 , "engines": [ "node" ]
-, "preferGlobal": true
 
 , "dependencies" : { "request" : "2.1.1"
                    , "follow"  : "0.2.0"
                    }
+
 , "main": "api.js"
-, "bin": {"fresh_couchdb": "./bin/cli.js"}
+, "bin": {"procouch": "./bin/cli.js"}
 }

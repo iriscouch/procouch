@@ -1,4 +1,4 @@
-// The fresh_couchdb API
+// The pro_couchdb API
 //
 // Copyright 2011 Iris Couch
 //

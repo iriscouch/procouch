@@ -12,11 +12,11 @@ The security object.
 
 ### AAAAaaaaaaahhhhhhh!
 
-Fresh CouchDB (or simply *Fresh*), on the other hand, says: **Relax.**
+Pro CouchDB (or simply *Procouch*), on the other hand, says: **Relax.**
 
 ## Objective
 
-Fresh monitors a CouchDB server, ensuring everything is always fresh:
+Procouch monitors a CouchDB server, ensuring everything is always like you want it:
 
 * The database is always compacted
 * Views are always up-to-date
@@ -26,21 +26,21 @@ Fresh monitors a CouchDB server, ensuring everything is always fresh:
 
 ## Objective
 
-Fresh permits only a certain staleness for CouchDB. You just run it and never think about it again. Or, if you like, you can configure its tolerances for your couch.
+Procouch permits only a certain staleness for CouchDB. You just run it and never think about it again. Or, if you like, you can configure its tolerances for your couch.
 
-For each database, Fresh maintains several invariants:
+For each database, Procouch maintains several invariants:
 
 * The `_security` object never deviates from what's expected
 * Maximum number of updates before all views are refreshed
 * Maximum elapsed time before all views are refreshed
 * Maximum number of updates before the database is compacted
 
-## Freshening a couch
+## How to Pro a Couch
 
-Install Fresh via NPM:
+Install Procouch via NPM:
 
-    npm -g install fresh_couchdb
+    npm -g install pro_couchdb
 
 Next, run it from the command-line and bask in the warmth.
 
-    fresh_couchdb https://username:password@example.iriscouch.com/
+    procouch https://username:password@example.iriscouch.com/
