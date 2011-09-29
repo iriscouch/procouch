@@ -13,6 +13,6 @@
 , "dependencies" : { "request" : "2.1.1"
                    , "follow"  : "0.2.0"
                    }
-, "main": "index.js"
+, "main": "api.js"
 , "bin": {"fresh_couchdb": "./bin/cli.js"}
 }
