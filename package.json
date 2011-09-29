@@ -10,7 +10,7 @@
 , "engines": [ "node" ]
 , "preferGlobal": true
 
-, "dependencies" : { "request" : "1.9.6"
+, "dependencies" : { "request" : "2.1.1"
                    , "follow"  : "0.2.0"
                    }
 , "main": "index.js"
