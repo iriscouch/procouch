@@ -13,6 +13,7 @@
 , "dependencies" : { "request" : "2.1.1"
                    , "follow"  : "0.2.0"
                    , "optimist": "0.2.6"
+                   , "defaultable": "0.4.0
                    }
 
 , "devDependencies": { "tap": "0.0.10"
