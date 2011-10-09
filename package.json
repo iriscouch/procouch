@@ -20,10 +20,5 @@
 
 , "main": "api.js"
 , "bin": { "procouch"       : "./bin/cli.js"
-         , "heat_couchdb"   : "./bin/cli.js"
-         , "clean_couchdb"  : "./bin/cli.js"
-         , "purge_couchdb"  : "./bin/cli.js"
-         , "deploy_couchdb" : "./bin/cli.js"
-         , "compact_couchdb": "./bin/cli.js"
          }
 }

@@ -9,8 +9,9 @@ Pro CouchDB (or simply *Procouch*) has a simple message for you: **Relax.**
 Procouch monitors and maintains a CouchDB server. Just run it and never think about it again. Procouch keeps everything like you want it.
 
 * The database is always compacted
-* Views are always fresh, compacted, and cleaned
+* Views are always updated, compacted, and cleaned
 * Very old deleted data is purged
+* Staging design documents are prepped for deployment
 * All of the above just works; but you can configure it for performance or for freshness as needed.
 
 ## Is it any good?
@@ -29,21 +30,71 @@ Run it from the command-line and relax.
 
 Procouch will continuously monitor the database, performing maintenance activity when needed.
 
-You can also execute specific procouch functions by supplying a subcommand. After executing, the program will exit. This can be useful for cron jobs.
+You can also execute specific procouch functions, either with a subcommand or a dedicated program name.
 
-    procouch heat https://example.iriscouch.com    # Just heat the views
-    procouch clean https://example.iriscouch.com   # Just cleanup old indexes
-    procouch compact https://example.iriscouch.com # Just compact the databases
-    procouch purge https://example.iriscouch.com   # Just purge old data
-    procouch deploy https://example.iriscouch.com  # Just deploy staged design documents
+    $ # Just heat the views
+    $ procouch heat https://example.iriscouch.com
 
-## Objectives
+    $ # Just clean up old view indexes.
+    $ procouch clean https://example.iriscouch.com
 
-Procouch permits only a certain staleness for CouchDB. Just run it and never think about it again.
+    $ # Just compact the databases.
+    $ procouch compact https://example.iriscouch.com
 
-For each database, Procouch maintains several invariants:
+    $ # Just purge old data
+    $ procouch purge https://example.iriscouch.com
 
-* The `_security` object never deviates from what's expected
-* Maximum number of updates before all views are refreshed
-* Maximum elapsed time before all views are refreshed
-* Maximum number of updates before the database is compacted
+    $ # Just prep staged design documents for deployment
+    $ procouch deploy https://example.iriscouch.com
+
+## Configuration File
+
+The config file contains one Javascript or JSON object. Keys are the same as the command-line options (documented below) and apply globally. Specify per-server overrides as secondary-level objects, keyed on the server URL. Specify per-database verrides as tertiary objects keyed on the database path, *or* as secondary-level objects keyed on the database URL.
+
+Example, `my_couch.conf`:
+
+```javascript
+{ tasks: ['clean', 'heat'] // No compaction, purging, or prepping, thank you.
+, exit: true
+, compact_updates: 100000
+
+// Example server-level overrides
+, "http://localhost:5984":
+  { exit: false // Always run against my dev couch
+  , tasks: ['compact', 'clean', 'purge']
+
+  // Example database overrides
+  , "/db_A": { "tasks": [] }      // Never do maintenance
+  , "/db_B": { "tasks": ['all'] } // Do all maintenance routines
+  }
+
+// Another example database-level overrides
+, "https://example.iriscouch.com:6984/production_db":
+  { tasks: ['compact', 'heat', 'clean', 'purge']
+  , security: { admins : {"names":[]     , "roles":["dba", "developer"]}
+              , readers: {"names":["bob"], "roles":["users"]}
+              }
+  , exit: false
+  }
+}
+```
+
+## Global Options
+
+* `--config=<file>` | Read the configuration from `<file>`
+* `--exit` | Exit after running once; useful for cron jobs and one-off maintenance. Default: `false`
+* `--security=<json>` | Set the database `_security` object to this (be careful about using this globally, it's more useful in a per-db config)
+
+## Procouch Heat
+
+The heater permits only a certain staleness for a database. The options indicate invariants which Procouch will enforce. These will be ignored when run as a one-off command `procouch heat <url>`.
+
+* `--updates=N` | Maximum number of updates before all views are refreshed. Default: `100`
+* `--seconds=N` | Maximum elapsed seconds before all views are refreshed. Default: `3600` (1 hour)
+* `--nice=<bool>` | Do not heat a database if it is compacting. Default: `true`
+
+## Procouch Compact
+
+Procouch will automatically trigger database compaction after a certain number of updates. These will be ignored when run as a one-off command `procouch compact <url>`.
+
+* `--compact_updates=N` | Number of updates before compaction is triggered again. Default: `5000`
