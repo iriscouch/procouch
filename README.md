@@ -49,9 +49,17 @@ You can also execute specific procouch functions, either with a subcommand or a 
 
 ## Configuration File
 
-The config file contains one Javascript or JSON object. Keys are the same as the command-line options (documented below) and apply globally. Specify per-server overrides as secondary-level objects, keyed on the server URL. Specify per-database verrides as tertiary objects keyed on the database path, *or* as secondary-level objects keyed on the database URL.
+The config file contains one Javascript or JSON object. Keys are the same as the command-line options (documented below) and apply globally.
 
-Example, `my_couch.conf`:
+A typical config, `simple_procouch.conf`:
+
+```javascript
+{ "http://localhost:5984": {}
+, "https://admin:secret@example.iriscouch.com": {"timeout":60}
+}
+```
+
+A more advanced config, `advanced_procouch.conf`:
 
 ```javascript
 { tasks: ['clean', 'heat'] // No compaction, purging, or prepping, thank you.
@@ -60,8 +68,9 @@ Example, `my_couch.conf`:
 
 // Example server-level overrides
 , "http://localhost:5984":
-  { exit: false // Always run against my dev couch
+  { exit: false // Continuous monitoring and maintenance for my local server.
   , tasks: ['compact', 'clean', 'purge']
+  , dbs: ["db_A", "db_B", "db_C"]
 
   // Example database overrides
   , "/db_A": { "tasks": [] }      // Never do maintenance
@@ -79,9 +88,27 @@ Example, `my_couch.conf`:
 }
 ```
 
+
+Specify per-server overrides as secondary-level objects, keyed on the server URL. Specify per-database verrides as tertiary objects keyed on the database path, *or* as secondary-level objects keyed on the database URL.
+
+If you do not specify a target on the command-line, Procouch finds targets from the config:
+
+1. Look for a top-level `urls` list.
+  * If it exists, target every URL in the list.
+  * Otherwise, target every top-level key that looks like a URL (http or https)
+1. If the target is a database, manage only that database
+1. If the target is a couch, look for a `dbs` list.
+  * If it exists, manage only databases from the list
+  * Otherwise, manage every database in the couch
+1. If any target (couch or database) has a `"skip":true` setting, do not manage it
+
+This allows lots of flexibility to configure couches but temporarily disable managing, or to whitelist or blacklist couches and databases.
+
 ## Global Options
 
 * `--config=<file>` | Read the configuration from `<file>`
+* `--log=<level>` | Set log (verbosity) level. Default: `info`
+* `--timeout=N` | Assume no response after `N` seconds is a timeout error. Default: 15
 * `--exit` | Exit after running once; useful for cron jobs and one-off maintenance. Default: `false`
 * `--security=<json>` | Set the database `_security` object to this (be careful about using this globally, it's more useful in a per-db config)
 
