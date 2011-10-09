@@ -30,26 +30,18 @@ Run it from the command-line and relax.
 
 Procouch will continuously monitor the database, performing maintenance activity when needed.
 
-You can also execute specific procouch functions, either with a subcommand or a dedicated program name.
+You can also execute specific procouch functions with a subcommand.
 
-    $ # Just heat the views
-    $ procouch heat https://example.iriscouch.com
-
-    $ # Just clean up old view indexes.
-    $ procouch clean https://example.iriscouch.com
-
-    $ # Just compact the databases.
-    $ procouch compact https://example.iriscouch.com
-
-    $ # Just purge old data
-    $ procouch purge https://example.iriscouch.com
-
-    $ # Just prep staged design documents for deployment
-    $ procouch deploy https://example.iriscouch.com
+    $ procouch https://example.iriscouch.com         # Do everything
+    $ procouch heat https://example.iriscouch.com    # Just heat the views
+    $ procouch clean https://example.iriscouch.com   # Just clean up old view indexes.
+    $ procouch compact https://example.iriscouch.com # Just compact the databases.
+    $ procouch purge https://example.iriscouch.com   # Just purge old data
+    $ procouch deploy https://example.iriscouch.com  # Just prep staged design documents
 
 ## Configuration File
 
-The config file contains one Javascript or JSON object. Keys are the same as the command-line options (documented below) and apply globally.
+The `--config` file or URL contains one Javascript or JSON object. Keys are the same as the command-line options (documented below) and apply globally.
 
 A typical config, `simple_procouch.conf`:
 
@@ -58,6 +50,50 @@ A typical config, `simple_procouch.conf`:
 , "https://admin:secret@example.iriscouch.com": {"timeout":60}
 }
 ```
+
+## Global Options
+
+* `--config=<file>` | Read the configuration from `<file>`
+* `--log=<level>` | Set log (verbosity) level. Default: `info`
+* `--timeout=N` | Assume no response after `N` seconds is a timeout error. Default: 15
+* `--exit` | Exit after running once; useful for cron jobs and one-off maintenance. Default: `false`
+* `--security=<json>` | Set the database `_security` object to this (be careful about using this globally, it's more useful in a per-db config)
+
+## Procouch Heat
+
+The heater permits only a certain staleness for a database. The options indicate invariants which Procouch will enforce. These will be ignored when run as a one-off command `procouch heat <url>`.
+
+* `--updates=N` | Maximum number of updates before all views are refreshed. Default: `100`
+* `--seconds=N` | Maximum elapsed seconds before all views are refreshed. Default: `3600` (1 hour)
+* `--nice=<bool>` | Do not heat a database if it is compacting. Default: `true`
+
+## Procouch Compact
+
+Procouch will automatically trigger database compaction after a certain number of updates. These will be ignored when run as a one-off command `procouch compact <url>`.
+
+* `--compact_updates=N` | Number of updates before compaction is triggered again. Default: `5000`
+
+## Advanced Configuration Techniques
+
+Specify per-couch configs as objects keyed on the server URL. Specify per-database configs as inner objects, keyed on the database path, *or* as top-level objects keyed on the database URL. Everything always inherits the settings from its parents.
+
+This is the basic strategy Procouch uses to find targets and configurations:
+
+1. Look for a top-level `urls` list.
+  * If it exists, target every URL in the list.
+  * Otherwise, target every top-level key that looks like a URL
+1. Probe the target.
+  * If the target is a database, manage only that database
+  * If the target is a couch
+    1. Look for a config setting, `/_config/iris_couch/procouch`
+      * If it does not exist, no problem
+      * If it does exist, the returned JSON merge it to the config (lower precedence)
+    2. Look for a `dbs` list in its config
+      * If `dbs` exists, target only databases from the list
+      * Otherwise, target every database in the server
+1. If any target (couch or database) has a `"skip":true` setting, do not manage it
+
+This allows lots of flexibility to configure couches but temporarily disable managing, or to whitelist or blacklist couches and databases.
 
 A more advanced config, `advanced_procouch.conf`:
 
@@ -87,41 +123,3 @@ A more advanced config, `advanced_procouch.conf`:
   }
 }
 ```
-
-
-Specify per-server overrides as secondary-level objects, keyed on the server URL. Specify per-database verrides as tertiary objects keyed on the database path, *or* as secondary-level objects keyed on the database URL.
-
-If you do not specify a target on the command-line, Procouch finds targets from the config:
-
-1. Look for a top-level `urls` list.
-  * If it exists, target every URL in the list.
-  * Otherwise, target every top-level key that looks like a URL (http or https)
-1. If the target is a database, manage only that database
-1. If the target is a couch, look for a `dbs` list.
-  * If it exists, manage only databases from the list
-  * Otherwise, manage every database in the couch
-1. If any target (couch or database) has a `"skip":true` setting, do not manage it
-
-This allows lots of flexibility to configure couches but temporarily disable managing, or to whitelist or blacklist couches and databases.
-
-## Global Options
-
-* `--config=<file>` | Read the configuration from `<file>`
-* `--log=<level>` | Set log (verbosity) level. Default: `info`
-* `--timeout=N` | Assume no response after `N` seconds is a timeout error. Default: 15
-* `--exit` | Exit after running once; useful for cron jobs and one-off maintenance. Default: `false`
-* `--security=<json>` | Set the database `_security` object to this (be careful about using this globally, it's more useful in a per-db config)
-
-## Procouch Heat
-
-The heater permits only a certain staleness for a database. The options indicate invariants which Procouch will enforce. These will be ignored when run as a one-off command `procouch heat <url>`.
-
-* `--updates=N` | Maximum number of updates before all views are refreshed. Default: `100`
-* `--seconds=N` | Maximum elapsed seconds before all views are refreshed. Default: `3600` (1 hour)
-* `--nice=<bool>` | Do not heat a database if it is compacting. Default: `true`
-
-## Procouch Compact
-
-Procouch will automatically trigger database compaction after a certain number of updates. These will be ignored when run as a one-off command `procouch compact <url>`.
-
-* `--compact_updates=N` | Number of updates before compaction is triggered again. Default: `5000`
