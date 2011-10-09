@@ -15,6 +15,7 @@
 //    limitations under the License.
 
 module.exports = defaultable;
+module.exports.merge = merge_obj;
 
 function defaultable(initial_defs, definer) {
   if(typeof initial_defs == 'function' && typeof definer != 'function') {
@@ -41,21 +42,54 @@ function defaultable(initial_defs, definer) {
     return defaulter;
 
     function defaulter(new_defs) {
-      new_defs = new_defs || {};
-
-      for (var key in old_defs)
-        if(! (key in new_defs))
-          new_defs[key] = old_defs[key];
-
       var faux_exports = {};
       var faux_module = {"exports":faux_exports};
+      var final_defs = merge_obj(new_defs || {}, old_defs);
 
-      definer(faux_module, faux_exports, new_defs);
+      definer(faux_module, faux_exports, final_defs);
 
       var api = faux_module.exports;
-      api.defaults = make_defaulter(new_defs);
+      api.defaults = make_defaulter(final_defs);
 
       return api;
     }
   }
+}
+
+function is_obj(val) {
+  return val && !Array.isArray(val) && (typeof val === 'object')
+}
+
+// Recursively merge higher-priority values into previously-set lower-priority ones.
+function merge_obj(high, low) {
+  if(!is_obj(high))
+    throw new Error('Bad merge high-priority');
+  if(!is_obj(low))
+    throw new Error('Bad merge low-priority');
+
+  var keys = [];
+  function add_key(k) {
+    if(!~ keys.indexOf(k))
+      keys.push(k);
+  }
+
+  Object.keys(high).forEach(add_key);
+  Object.keys(low).forEach(add_key);
+
+  var result = {};
+  keys.forEach(function(key) {
+    var high_val = high[key];
+    var low_val = low[key];
+
+    if(is_obj(high_val) && is_obj(low_val))
+      result[key] = merge_obj(high_val, low_val);
+    else if (key in high)
+      result[key] = high[key];
+    else if (key in low)
+      result[key] = low[key];
+    else
+      throw new Error('Unknown key type: ' + key);
+  })
+
+  return result;
 }

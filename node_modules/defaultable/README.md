@@ -2,6 +2,10 @@
 
 Defaultable is a simple drop-in tool to make your Node API very convenient for your users. It comes from internal [Iris Couch](http://www.iriscouch.com) tooling.
 
+Defaultable is pure CommonJS Javascript, and is also available as an NPM module.
+
+    $ npm install defaultable
+
 ## Is it any good?
 
 Yes.
