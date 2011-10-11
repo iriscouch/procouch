@@ -68,12 +68,13 @@ test('Invalid configs', function(t) {
     cfg[couch][db] = {'log':'debug'};
     cfg[full] = {'log':'debug'};
 
-    var mod = config.defaults(cfg);
-    mod.start(function(er, resp) {
-      t.ok(er, "Overlapping URLs return an error: " + JSON.stringify(pair));
-      t.ok(er && er.message.match(/^Overlapping/),
-           "Overlapping URLs return a useful error message: " + JSON.stringify(pair));
-    })
+    var mod, er = null;
+    try       { mod = config.defaults(cfg) }
+    catch (e) { er = e                     }
+
+    t.ok(er, "Overlapping URLs return an error: " + JSON.stringify(pair));
+    t.ok(er && er.message.match(/^Overlapping/),
+         "Overlapping URLs return a useful error message: " + JSON.stringify(pair));
   })
 })
 
@@ -110,10 +111,10 @@ test('Command-line', function(t) {
     t.equal(targets.length, 2, 'Multiple command-line targets')
     t.type(targets[1], 'object', 'Targets returned are objects')
 
-    function is_ok(uri) { return ( uri == 'http://localhost:5984/procouch_test'
-                                 || uri == 'http://127.0.0.1:5984/procouch_test' ) }
+    function is_ok(T) { return ( T.uri == 'http://localhost:5984/procouch_test'
+                              || T.uri == 'http://127.0.0.1:5984/procouch_test' ) }
 
-    t.ok(is_ok(targets[0].uri), 'First target knows its URI')
-    t.ok(is_ok(targets[1].uri), 'Second target knows its URI')
+    t.ok(is_ok(targets[0]), 'First target knows its URI')
+    t.ok(is_ok(targets[1]), 'Second target knows its URI')
   })
 })
