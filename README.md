@@ -79,7 +79,7 @@ Specify per-couch configs as objects keyed on the server URL. Specify per-databa
 
 This is the basic strategy Procouch uses to find targets and configurations:
 
-1. Look for a top-level `urls` list.
+1. Look for a top-level `urls` list (overridden by command-line URLs)
   * If it exists, target every URL in the list.
   * Otherwise, target every top-level key that looks like a URL
 1. Probe the target.
@@ -102,8 +102,8 @@ A more advanced config, `advanced_procouch.conf`:
 , exit: true
 , compact_updates: 100000
 
-// Example server-level overrides
-, "http://localhost:5984":
+// Example server-level overrides, with embedded authentication credentials
+, "http://admin:secret@localhost:5984":
   { exit: false // Continuous monitoring and maintenance for my local server.
   , tasks: ['compact', 'clean', 'purge']
   , dbs: ["db_A", "db_B", "db_C"]
@@ -113,13 +113,15 @@ A more advanced config, `advanced_procouch.conf`:
   , "/db_B": { "tasks": ['all'] } // Do all maintenance routines
   }
 
-// Another example database-level overrides
+// Example database-level override, with environment variable credntials
 , "https://example.iriscouch.com:6984/production_db":
-  { tasks: ['compact', 'heat', 'clean', 'purge']
+  { username: process.env.COUCH_USER
+  , password: process.env.COUCH_PASS
+  , tasks: ['compact', 'heat', 'clean', 'purge']
   , security: { admins : {"names":[]     , "roles":["dba", "developer"]}
               , readers: {"names":["bob"], "roles":["users"]}
               }
-  , exit: false
+  , log: 'warn'
   }
 }
 ```
