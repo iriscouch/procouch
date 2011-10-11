@@ -89,8 +89,8 @@ This is the basic strategy Procouch uses to find targets and configurations:
       * If it does not exist, no problem
       * If it does exist, the returned JSON merge it to the config (lower precedence)
     2. Look for a `dbs` list in its config
-      * If `dbs` exists, target only databases from the list
-      * Otherwise, target every database in the server
+      * If `dbs` is a list, target only databases from the list
+      * Otherwise, if `dbs` is `"all"` or undefined, target every database in the server.
 1. If any target (couch or database) has a `"skip":true` setting, do not manage it
 
 This allows lots of flexibility to configure couches but temporarily disable managing, or to whitelist or blacklist couches and databases.

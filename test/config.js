@@ -20,10 +20,12 @@ var test = require('tap').test
   , request = require('request')
   ;
 
+var LH = 'http://localhost:5984';
+var DB = LH + '/procouch_test';
 
 test('Couch is up', function(t) {
-  request('http://localhost:5984/_session', function(er, resp, body) {
-    t.notOk(er);
+  request(LH+'/_session', function(er, resp, body) {
+    t.notOk(er, 'Check session');
     t.equal(resp.statusCode, 200, 'Couch is up');
     t.ok(body, 'Session response body');
 
@@ -33,7 +35,17 @@ test('Couch is up', function(t) {
     t.equal(userCtx.roles.length, 1, 'Couch admin party role length')
     t.equal(userCtx.roles[0], '_admin', 'Couch admin party roles')
 
-    t.end();
+    request({method:'DELETE', uri:DB}, function(er, resp, body) {
+      t.notOk(er, 'Delete test DB request')
+      t.ok(resp.statusCode == 200 || resp.statusCode == 404, 'Delete old test DB');
+
+      request({method:'PUT', uri:DB}, function(er, resp, body) {
+        t.notOk(er);
+        t.equal(resp.statusCode, 201, 'Create test DB: ' + JSON.stringify(body));
+
+        t.end();
+      })
+    })
   })
 })
 
@@ -62,5 +74,46 @@ test('Invalid configs', function(t) {
       t.ok(er && er.message.match(/^Overlapping/),
            "Overlapping URLs return a useful error message: " + JSON.stringify(pair));
     })
+  })
+})
+
+test('Command-line', function(t) {
+  t.plan(11 + 4);
+
+  function cfg(args, cb) {
+    args = ['node', 'cli.js'].concat(args);
+    var mod = config.defaults({'argv':args});
+    mod.start(function(er, targets) {
+      t.notOk(er, "Establishing targets should not throw")
+      targets = targets.filter(function(T) { return T && /\/procouch_test$/.test(T.uri) })
+      return cb(targets);
+    })
+  }
+
+  cfg([], function(targets) {
+    t.equal(targets.length, 0, 'No targets specified')
+  })
+
+  cfg(['http://localhost:5984/'], function(targets) {
+    t.equal(targets.length, 1, 'Couch URLs work')
+    t.type(targets[0], 'object', 'Targets returned are objects')
+    t.equal(targets[0].uri, 'http://localhost:5984/procouch_test', 'Targets know their URI')
+  })
+
+  cfg(['http://localhost:5984/procouch_test'], function(targets) {
+    t.equal(targets.length, 1, 'DB URLs work')
+    t.type(targets[0], 'object', 'DB targets returned are objects')
+    t.equal(targets[0].uri, 'http://localhost:5984/procouch_test', 'DB targets know their URI')
+  })
+
+  cfg(['http://localhost:5984', 'http://127.0.0.1:5984'], function(targets) {
+    t.equal(targets.length, 2, 'Multiple command-line targets')
+    t.type(targets[1], 'object', 'Targets returned are objects')
+
+    function is_ok(uri) { return ( uri == 'http://localhost:5984/procouch_test'
+                                 || uri == 'http://127.0.0.1:5984/procouch_test' ) }
+
+    t.ok(is_ok(targets[0].uri), 'First target knows its URI')
+    t.ok(is_ok(targets[1].uri), 'Second target knows its URI')
   })
 })
