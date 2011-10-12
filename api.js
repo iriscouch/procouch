@@ -14,5 +14,9 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+require('defaultable').def(module, {}, function(module, exports, DEFS, require) {
+
 module.exports = { 'lib': require('./lib')
                  }
+
+})
