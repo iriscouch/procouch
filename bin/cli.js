@@ -20,10 +20,10 @@ var procouch = require('../api')
   , lib = procouch.lib
   ;
 
-//var LOG = procouch.logging.getLogger('view_heater');
+var LOG = procouch.logging.getLogger('procouch');
+LOG.setLevel(process.env.procouch_log || 'info');
 
-console.log('Process.argv:');
-console.dir(process.argv);
+LOG.debug('Process.argv: ' + lib.JS(process.argv));
 //console.log('\nARGV:');
 //console.dir(ARGV);
 
