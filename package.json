@@ -14,6 +14,7 @@
                    , "request" : "2.1.1"
                    , "follow"  : "0.2.0"
                    , "optimist": "0.2.6"
+                   , "probe_couchdb": "0.2.2"
                    , "defaultable": "0.6.1"
                    }
 
